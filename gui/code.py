@@ -123,18 +123,21 @@ def greedy_fire(start, goals, fires, cell_cost):
         visited.add(node)
         expanded.append(node)
 
+        print(f"Expanding: {node}, h={heuristic_to_goals(node, goals)}, cost={cost}")
+
         if node in goals:
             return path, cost, expanded
 
         for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
             nr, nc = node[0]+dr, node[1]+dc
             if 0 <= nr < GRID_SIZE and 0 <= nc < GRID_SIZE and (nr, nc) not in fires:
+               
                 heapq.heappush(
                     pq,
-                    (heuristic_to_goals((nr, nc), goals) + cost + cell_cost[nr][nc],
+                    (heuristic_to_goals((nr, nc), goals),
                      (nr, nc),
                      path + [(nr, nc)],
-                     cost + cell_cost[nr][nc])
+                     cost + cell_cost[nr][nc])  
                 )
     return None, None, expanded
 
@@ -197,6 +200,8 @@ class EvacuationGUI:
 
         self.algo = tk.StringVar(value="UCS")
 
+        self.cell_cost = [[random.randint(1,5) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+
         top = tk.Frame(root)
         top.pack()
 
@@ -248,6 +253,7 @@ class EvacuationGUI:
                     (c+1)*CELL_SIZE, (r+1)*CELL_SIZE,
                     fill=color, outline="black"
                 )
+
                 row.append(rect)
             self.cells.append(row)
 
@@ -272,7 +278,7 @@ class EvacuationGUI:
     def start(self):
         fires = {(r, c) for r in range(GRID_SIZE) for c in range(GRID_SIZE) if self.grid[r][c] == 1}
         nodes = self.build_nodes(fires)
-        cell_cost = [[random.randint(1,5) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+        cell_cost = self.cell_cost
 
         algo = self.algo.get()
         t0 = time.time()
@@ -312,8 +318,8 @@ class EvacuationGUI:
         y1 = r*CELL_SIZE + 6
         x2 = x1 + CELL_SIZE - 12
         y2 = y1 + CELL_SIZE - 12
-
         self.canvas.create_oval(x1, y1, x2, y2, fill="purple")
+
         self.root.after(200, self.move)
 
 
